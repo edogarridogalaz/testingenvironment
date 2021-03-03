@@ -78,7 +78,6 @@ jobs:
           branch_pattern: master
           channel: C01QKTYGUL8
           template: basic_success_1
-
       - jira/notify
 
   test-task:
@@ -142,7 +141,6 @@ jobs:
           branch_pattern: master
           channel: C01QKTYGUL8
           template: basic_success_1
-      
       - jira/notify
 
   sonarqube-task:
@@ -249,11 +247,13 @@ jobs:
           template: basic_success_1
       - jira/notify
 
+
   publish-on-artifactory-master:
     docker:
       - image: 'cimg/base:stable'
     steps:
       - run: echo "Artifactory master"
+
       ###############################
       # no-productive notifications #
       ###############################
@@ -416,7 +416,7 @@ workflows:
               - build-task
           post-steps:
               - jira/notify:
-                  job_type: build
+                  job_type: deployment
                   environment_type: testing
           
       - sonarqube-task:
@@ -424,7 +424,7 @@ workflows:
               - test-task
           post-steps:
               - jira/notify:
-                  job_type: build
+                  job_type: deployment
                   environment_type: testing 
       
 
