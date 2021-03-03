@@ -186,7 +186,33 @@ jobs:
       - image: 'cimg/base:stable'
     steps:
       - run: echo "Artifactory develop"
+      ###############################
+      # no-productive notifications #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*            
+          channel: C01PQ27R3N2            
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*    
+          channel: C01PQ27R3N2           
+          template: basic_success_1
 
+      ###############################
+      # productive notifications    #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: master
+          channel: C01QKTYGUL8      
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: master
+          channel: C01QKTYGUL8
+          template: basic_success_1
       - jira/notify
 
   publish-on-artifactory-release:
@@ -194,7 +220,33 @@ jobs:
       - image: 'cimg/base:stable'
     steps:
       - run: echo "Artifactory release"
+      ###############################
+      # no-productive notifications #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*            
+          channel: C01PQ27R3N2            
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*    
+          channel: C01PQ27R3N2           
+          template: basic_success_1
 
+      ###############################
+      # productive notifications    #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: master
+          channel: C01QKTYGUL8      
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: master
+          channel: C01QKTYGUL8
+          template: basic_success_1
       - jira/notify
 
   publish-on-artifactory-master:
@@ -202,7 +254,34 @@ jobs:
       - image: 'cimg/base:stable'
     steps:
       - run: echo "Artifactory master"
+      ###############################
+      # no-productive notifications #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*            
+          channel: C01PQ27R3N2            
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*    
+          channel: C01PQ27R3N2           
+          template: basic_success_1
 
+      ###############################
+      # productive notifications    #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: master
+          channel: C01QKTYGUL8      
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: master
+          channel: C01QKTYGUL8
+          template: basic_success_1
+      - jira/notify
   #
   # AWS ECR Tasks
   #
