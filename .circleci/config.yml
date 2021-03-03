@@ -206,12 +206,12 @@ workflows:
               - sonarqube2
           filters:
               branches:
-                only: /master\/.*/
+                only: /master/
 
       - publish-on-ecr2-master:
           requires:
               - sonarqube2
           filters:
               branches:
-                only: /master\/.*/
+                only: /master/
       
