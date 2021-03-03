@@ -180,7 +180,7 @@ workflows:
 
       - publish-on-ecr2-develop:
           requires:
-              - sonarqube2
+              - publish-on-artifactory2-develop
           filters:
               branches:
                 only: /develop/
@@ -195,22 +195,27 @@ workflows:
 
       - publish-on-ecr2-release:
           requires:
-              - sonarqube2
+              - publish-on-artifactory2-release
           filters:
               branches:
                 only: /release\/.*/
 
       # publish and docker image for Master branch
-      - publish-on-artifactory2-master:
+       - approve-deploy:
+          type: approval
           requires:
               - sonarqube2
+
+      - publish-on-artifactory2-master:
+          requires:
+              - approve-deploy
           filters:
               branches:
                 only: /master/
 
       - publish-on-ecr2-master:
           requires:
-              - sonarqube2
+              - publish-on-artifactory2-master
           filters:
               branches:
                 only: /master/
