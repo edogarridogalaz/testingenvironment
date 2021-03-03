@@ -150,7 +150,33 @@ jobs:
       - image: 'cimg/base:stable'
     steps:
       - run: echo "sonar scanner"
+      ###############################
+      # no-productive notifications #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*            
+          channel: C01PQ27R3N2            
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*    
+          channel: C01PQ27R3N2           
+          template: basic_success_1
 
+      ###############################
+      # productive notifications    #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: master
+          channel: C01QKTYGUL8      
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: master
+          channel: C01QKTYGUL8
+          template: basic_success_1
       - jira/notify
   #
   # Artifactory Tasks
@@ -395,6 +421,7 @@ workflows:
       - approve-deploy:
           type: approval
           requires:
+              - sonarqube-task
               - slack/on-hold
           filters:
               branches:
