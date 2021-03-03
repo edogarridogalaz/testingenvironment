@@ -249,12 +249,13 @@ jobs:
           template: basic_success_1
       - jira/notify
 
-      
+
   publish-on-artifactory-master:
     docker:
       - image: 'cimg/base:stable'
     steps:
       - run: echo "Artifactory master"
+      
       ###############################
       # no-productive notifications #
       ###############################
