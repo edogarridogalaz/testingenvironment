@@ -180,7 +180,17 @@ jobs:
   #
   # AWS ECR Tasks
   #
-  aws-ecr/build-and-push-image2:
+  awsecr-develop:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run: echo "AWS ECR ${CIRCLE_BRANCH}"
+  awsecr-release:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run: echo "AWS ECR ${CIRCLE_BRANCH}"
+  awsecr-master:
     docker:
       - image: alpine:latest
     steps:
@@ -261,7 +271,8 @@ workflows:
               branches:
                 only: /develop/
 
-      - aws-ecr/build-and-push-image2:
+      - awsecr-develop:
+          name: "develop"
           requires:
             - publish-on-artifactory-develop
           filters:
@@ -270,7 +281,7 @@ workflows:
               
       - success-notify:
           requires:
-            - aws-ecr/build-and-push-image2        
+            - awsecr-develop   
           post-steps:
               - jira/notify:
                   job_type: deployment
@@ -289,7 +300,8 @@ workflows:
               branches:
                 only: /release\/.*/
 
-      - aws-ecr/build-and-push-image2:
+      - awsecr-release:
+          name: "release"
           requires:
             - publish-on-artifactory-release
           filters:
@@ -298,7 +310,7 @@ workflows:
 
       - success-notify:
           requires:
-            - aws-ecr/build-and-push-image2          
+            - awsecr-release          
           post-steps:
               - jira/notify:
                   job_type: deployment
@@ -316,7 +328,8 @@ workflows:
               branches:
                 only: /master/
           requires:
-            - sonarqube-task
+              - sonarqube-task
+
       - approve-deploy:
           type: approval
           requires:
@@ -332,16 +345,17 @@ workflows:
               branches:
                 only: /master/
 
-      - aws-ecr/build-and-push-image2:
+      - awsecr-master:
+          name: "master"
           requires:
-            - publish-on-artifactory-master
+              - publish-on-artifactory-master
           filters:
               branches:
                 only: /master/
 
       - success-notify:
           requires:
-            - aws-ecr/build-and-push-image2            
+              - awsecr-master            
           post-steps:
               - jira/notify:
                   job_type: deployment
