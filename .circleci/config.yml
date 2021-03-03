@@ -319,6 +319,7 @@ workflows:
               branches:
                 only: /release\/.*/
                 
+                
 
       ##############################################
       # publish and docker image for Master branch #
