@@ -1,0 +1,51 @@
+plugins {
+    id 'org.springframework.boot' version '2.4.1'
+    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+    id 'java'
+    id 'jacoco'
+}
+
+group = 'com.nubox.core'
+version = '1.0.0-DEV'
+sourceCompatibility = '11'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    maven {
+        url = 'https://sumasaas.jfrog.io/artifactory/virtual-backend-dev/'
+        credentials {
+            username "development"
+            password "#3!Cw@>4YDC@"
+        }
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'com.nubox.common:nubox-common:1.0.0'
+    implementation 'io.fusionauth:fusionauth-java-client:1.7.0'
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation group: 'net.sf.dozer', name: 'dozer', version: '5.5.1'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

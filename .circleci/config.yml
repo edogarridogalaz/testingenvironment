@@ -1,0 +1,114 @@
+# Java Gradle CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-java/ for more details
+#
+version: 2.1
+
+
+orbs:
+  artifactory-orb: jfrog/artifactory-orb@1.0.1
+  aws-ecr: circleci/aws-ecr@6.15.3
+
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:11-jdk
+
+    working_directory: ~/repo
+
+    environment:
+      # Customize the JVM maximum heap limit
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run: gradle dependencies
+
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle" }}
+
+      # run build
+      - run: gradle build -x test
+      
+      - persist_to_workspace:
+          root: /home/circleci/repo
+          paths:
+            - build/libs/*
+
+  test:
+    docker:
+      - image: circleci/openjdk:11-jdk
+      
+    working_directory: ~/repo
+
+    environment:
+      # Customize the JVM maximum heap limit
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            - v1-dependencies-
+
+      # run tests!
+      - run: gradle test jacocoTestReport
+
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results/junit 
+
+  publish-on-artifactory:
+    docker:
+      - image: alpine:latest
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+      
+      - run:
+          name: Install alpine packages
+          command: |
+           apk add openjdk11 curl gradle
+
+      - run:
+          name: Install and Deploy jFrog CLI
+          command: |
+           curl -fL https://getcli.jfrog.io | sh
+           chmod +x jfrog
+           ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --password $ARTIFACTORY_APIKEY --interactive=false
+           ./jfrog rt gradle-config --deploy-ivy-desc=false --repo-resolve=remote-backend-dev --server-id-resolve=Default-Server --repo-deploy=local-backend-dev --server-id-deploy=Default-Server
+           ./jfrog rt gradle clean build artifactoryPublish -b build.gradle
+           
+
+workflows:
+  build_and_test:
+    jobs:
+      - publish-on-artifactory:
+          filters:
+            branches:
+              only: develop
+      
