@@ -185,18 +185,20 @@ jobs:
       - image: alpine:latest
     steps:
       - run: echo "AWS ECR ${CIRCLE_BRANCH}"
+
   awsecr-release:
     docker:
       - image: alpine:latest
     steps:
       - run: echo "AWS ECR ${CIRCLE_BRANCH}"
+      
   awsecr-master:
     docker:
       - image: alpine:latest
     steps:
       - run: echo "AWS ECR ${CIRCLE_BRANCH}"
 
-  success-notify:    
+  success-notify-develop:    
     docker:
       - image: 'cimg/base:stable'
     steps:
@@ -226,7 +228,68 @@ jobs:
           template: basic_success_1
 
       - jira/notify
-  
+
+  success-notify-release:    
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+    
+      - run: echo "Notificaciones de No Productivas"
+      - slack/notify:
+          event: fail
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*     
+          channel: C01PQ27R3N2           
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*   
+          channel: C01PQ27R3N2           
+          template: basic_success_1
+          
+      - run: echo "Notificaciones de Slack Productivas"
+      - slack/notify:
+          event: fail
+          branch_pattern: master
+          channel: C01QKTYGUL8            
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: master
+          channel: C01QKTYGUL8 
+          template: basic_success_1
+
+      - jira/notify
+
+  success-notify-master:    
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+    
+      - run: echo "Notificaciones de No Productivas"
+      - slack/notify:
+          event: fail
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*     
+          channel: C01PQ27R3N2           
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*   
+          channel: C01PQ27R3N2           
+          template: basic_success_1
+          
+      - run: echo "Notificaciones de Slack Productivas"
+      - slack/notify:
+          event: fail
+          branch_pattern: master
+          channel: C01QKTYGUL8            
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: master
+          channel: C01QKTYGUL8 
+          template: basic_success_1
+
+      - jira/notify  
 
 #####################################
 #              WORKFLOWS            #
@@ -245,7 +308,7 @@ workflows:
 
       - test-task:
           requires:
-            - build-task
+              - build-task
           post-steps:
               - jira/notify:
                   job_type: build
@@ -272,14 +335,13 @@ workflows:
                 only: /develop/
 
       - awsecr-develop:
-          name: "develop"
           requires:
             - publish-on-artifactory-develop
           filters:
             branches:
               only: /develop/
               
-      - success-notify:
+      - success-notify-develop:
           requires:
             - awsecr-develop   
           post-steps:
@@ -301,14 +363,13 @@ workflows:
                 only: /release\/.*/
 
       - awsecr-release:
-          name: "release"
           requires:
             - publish-on-artifactory-release
           filters:
               branches:
                 only: /release\/.*/
 
-      - success-notify:
+      - success-notify-release:
           requires:
             - awsecr-release          
           post-steps:
@@ -347,14 +408,13 @@ workflows:
                 only: /master/
 
       - awsecr-master:
-          name: "master"
           requires:
               - publish-on-artifactory-master
           filters:
               branches:
                 only: /master/
 
-      - success-notify:
+      - success-notify-master:
           requires:
               - awsecr-master            
           post-steps:
