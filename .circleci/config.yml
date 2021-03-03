@@ -201,7 +201,7 @@ workflows:
                 only: /release\/.*/
 
       # publish and docker image for Master branch
-       - approve-deploy:
+      - approve-deploy:
           type: approval
           requires:
               - sonarqube2
