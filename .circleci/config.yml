@@ -147,7 +147,7 @@ jobs:
 
   sonarqube-task:
     docker:
-      - image: alpine:latest
+      - image: 'cimg/base:stable'
     steps:
       - run: echo "sonar scanner"
 
@@ -157,7 +157,7 @@ jobs:
   #
   publish-on-artifactory-develop:
     docker:
-      - image: alpine:latest
+      - image: 'cimg/base:stable'
     steps:
       - run: echo "Artifactory develop"
 
@@ -165,7 +165,7 @@ jobs:
 
   publish-on-artifactory-release:
     docker:
-      - image: alpine:latest
+      - image: 'cimg/base:stable'
     steps:
       - run: echo "Artifactory release"
 
@@ -173,7 +173,7 @@ jobs:
 
   publish-on-artifactory-master:
     docker:
-      - image: alpine:latest
+      - image: 'cimg/base:stable'
     steps:
       - run: echo "Artifactory master"
 
@@ -182,19 +182,19 @@ jobs:
   #
   awsecr-develop:
     docker:
-      - image: alpine:latest
+      - image: 'cimg/base:stable'
     steps:
       - run: echo "AWS ECR ${CIRCLE_BRANCH}"
 
   awsecr-release:
     docker:
-      - image: alpine:latest
+      - image: 'cimg/base:stable'
     steps:
       - run: echo "AWS ECR ${CIRCLE_BRANCH}"
       
   awsecr-master:
     docker:
-      - image: alpine:latest
+      - image: 'cimg/base:stable'
     steps:
       - run: echo "AWS ECR ${CIRCLE_BRANCH}"
 
