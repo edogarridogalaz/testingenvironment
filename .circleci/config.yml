@@ -102,13 +102,116 @@ jobs:
            ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --password $ARTIFACTORY_APIKEY --interactive=false
            ./jfrog rt gradle-config --deploy-ivy-desc=false --repo-resolve=remote-backend-dev --server-id-resolve=Default-Server --repo-deploy=local-backend-dev --server-id-deploy=Default-Server
            ./jfrog rt gradle clean build artifactoryPublish -b build.gradle
-           
+
+  build2:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run: echo "build tasks"
+  
+  test2:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run: echo "tests"
+
+  sonarqube2:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run: echo "sonar scanner"
+
+  publish-on-artifactory2-develop:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run: echo "Artifactory develop"
+
+  publish-on-artifactory2-release:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run: echo "Artifactory release"
+
+  publish-on-artifactory2-master:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run: echo "Artifactory master"
+  
+  publish-on-ecr2-develop:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run: echo "AWS ECR develop"
+  
+  publish-on-ecr2-release:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run: echo "AWS ECR release"
+
+  publish-on-ecr2-master:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run: echo "AWS ECR master"
 
 workflows:
   build_and_test:
     jobs:
-      - publish-on-artifactory:
+      - build2
+
+      - test2:
+          requires:
+            - build2
+          
+      - sonarqube2:
+          requires:
+              - test2
+
+      # publish and docker image for develop branch
+      - publish-on-artifactory2-develop:
+          requires:
+              - sonarqube2
           filters:
-            branches:
-              only: develop
+              branches:
+                only: /develop/
+
+      - publish-on-ecr2-develop:
+          requires:
+              - sonarqube2
+          filters:
+              branches:
+                only: /develop/
+
+      # publish and docker image for Release branch
+      - publish-on-artifactory2-release:
+          requires:
+              - sonarqube2
+          filters:
+              branches:
+                only: /release\/.*/
+
+      - publish-on-ecr2-release:
+          requires:
+              - sonarqube2
+          filters:
+              branches:
+                only: /release\/.*/
+
+      # publish and docker image for Master branch
+      - publish-on-artifactory2-master:
+          requires:
+              - sonarqube2
+          filters:
+              branches:
+                only: /master\/.*/
+
+      - publish-on-ecr2-master:
+          requires:
+              - sonarqube2
+          filters:
+              branches:
+                only: /master\/.*/
       
