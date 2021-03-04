@@ -513,7 +513,9 @@ workflows:
           post-steps:
               - jira/notify:
                   job_type: deployment
-                  environment_type: testing 
+                  environment_type: testing
+          context:
+            - sonarCloud
       
 
 
