@@ -8,9 +8,11 @@ version: 2.1
 orbs:
   artifactory-orb: jfrog/artifactory-orb@1.0.1
   aws-ecr: circleci/aws-ecr@6.15.3
+  slack: circleci/slack@4.3.0
+  jira: circleci/jira@1.3.1
 
 jobs:
-  build:
+  build-task:
     docker:
       - image: circleci/openjdk:11-jdk
 
@@ -30,23 +32,55 @@ jobs:
             - v1-dependencies-{{ checksum "build.gradle" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
-
+      
+      # Refresh Dependencies
       - run: gradle dependencies
-
+      
+      # Store Dependencies
       - save_cache:
           paths:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}
 
-      # run build
+      # run build without tests
       - run: gradle build -x test
       
+      # Save the jars
       - persist_to_workspace:
           root: /home/circleci/repo
           paths:
-            - build/libs/*
+            - build/libs/*.jar
+      
+      ###############################
+      # no-productive notifications #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*            
+          channel: C01PQ27R3N2            
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*    
+          channel: C01PQ27R3N2           
+          template: basic_success_1
 
-  test:
+      ###############################
+      # productive notifications    #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: master
+          channel: C01QKTYGUL8      
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: master
+          channel: C01QKTYGUL8
+          template: basic_success_1
+      - jira/notify
+
+  test-task:
     docker:
       - image: circleci/openjdk:11-jdk
       
@@ -79,139 +113,421 @@ jobs:
           path: ~/test-results
       - store_artifacts:
           path: ~/test-results/junit 
-
-  publish-on-artifactory:
-    docker:
-      - image: alpine:latest
-
-    working_directory: ~/repo
-
-    steps:
-      - checkout
       
-      - run:
-          name: Install alpine packages
-          command: |
-           apk add openjdk11 curl gradle
+      ###############################
+      # no-productive notifications #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*            
+          channel: C01PQ27R3N2            
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*    
+          channel: C01PQ27R3N2           
+          template: basic_success_1
 
-      - run:
-          name: Install and Deploy jFrog CLI
-          command: |
-           curl -fL https://getcli.jfrog.io | sh
-           chmod +x jfrog
-           ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --password $ARTIFACTORY_APIKEY --interactive=false
-           ./jfrog rt gradle-config --deploy-ivy-desc=false --repo-resolve=remote-backend-dev --server-id-resolve=Default-Server --repo-deploy=local-backend-dev --server-id-deploy=Default-Server
-           ./jfrog rt gradle clean build artifactoryPublish -b build.gradle
+      ###############################
+      # productive notifications    #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: master
+          channel: C01QKTYGUL8      
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: master
+          channel: C01QKTYGUL8
+          template: basic_success_1
+      - jira/notify
 
-  build2:
+  sonarqube-task:
     docker:
-      - image: alpine:latest
-    steps:
-      - run: echo "build tasks"
-  
-  test2:
-    docker:
-      - image: alpine:latest
-    steps:
-      - run: echo "tests"
-
-  sonarqube2:
-    docker:
-      - image: alpine:latest
+      - image: 'cimg/base:stable'
     steps:
       - run: echo "sonar scanner"
+      ###############################
+      # no-productive notifications #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*            
+          channel: C01PQ27R3N2            
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*    
+          channel: C01PQ27R3N2           
+          template: basic_success_1
 
-  publish-on-artifactory2-develop:
+      ###############################
+      # productive notifications    #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: master
+          channel: C01QKTYGUL8      
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: master
+          channel: C01QKTYGUL8
+          template: basic_success_1
+      - jira/notify
+  #
+  # Artifactory Tasks
+  #
+  publish-on-artifactory-develop:
     docker:
-      - image: alpine:latest
+      - image: 'cimg/base:stable'
     steps:
       - run: echo "Artifactory develop"
+      ###############################
+      # no-productive notifications #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*            
+          channel: C01PQ27R3N2            
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*    
+          channel: C01PQ27R3N2           
+          template: basic_success_1
 
-  publish-on-artifactory2-release:
+      ###############################
+      # productive notifications    #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: master
+          channel: C01QKTYGUL8      
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: master
+          channel: C01QKTYGUL8
+          template: basic_success_1
+      - jira/notify
+
+  publish-on-artifactory-release:
     docker:
-      - image: alpine:latest
+      - image: 'cimg/base:stable'
     steps:
       - run: echo "Artifactory release"
+      ###############################
+      # no-productive notifications #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*            
+          channel: C01PQ27R3N2            
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*    
+          channel: C01PQ27R3N2           
+          template: basic_success_1
 
-  publish-on-artifactory2-master:
+      ###############################
+      # productive notifications    #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: master
+          channel: C01QKTYGUL8      
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: master
+          channel: C01QKTYGUL8
+          template: basic_success_1
+      - jira/notify
+
+
+  publish-on-artifactory-master:
     docker:
-      - image: alpine:latest
+      - image: 'cimg/base:stable'
     steps:
       - run: echo "Artifactory master"
-  
-  publish-on-ecr2-develop:
-    docker:
-      - image: alpine:latest
-    steps:
-      - run: echo "AWS ECR develop"
-  
-  publish-on-ecr2-release:
-    docker:
-      - image: alpine:latest
-    steps:
-      - run: echo "AWS ECR release"
 
-  publish-on-ecr2-master:
-    docker:
-      - image: alpine:latest
-    steps:
-      - run: echo "AWS ECR master"
+      ###############################
+      # no-productive notifications #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*            
+          channel: C01PQ27R3N2            
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*    
+          channel: C01PQ27R3N2           
+          template: basic_success_1
 
+      ###############################
+      # productive notifications    #
+      ###############################
+      - slack/notify:
+          event: fail
+          branch_pattern: master
+          channel: C01QKTYGUL8      
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: master
+          channel: C01QKTYGUL8
+          template: basic_success_1
+      - jira/notify
+  #
+  # AWS ECR Tasks
+  #
+  awsecr-develop:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - run: echo "AWS ECR ${CIRCLE_BRANCH}"
+
+  awsecr-release:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - run: echo "AWS ECR ${CIRCLE_BRANCH}"
+      
+  awsecr-master:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - run: echo "AWS ECR ${CIRCLE_BRANCH}"
+
+  success-notify-develop:    
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+    
+      - run: echo "Notificaciones de No Productivas"
+      - slack/notify:
+          event: fail
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*     
+          channel: C01PQ27R3N2           
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*   
+          channel: C01PQ27R3N2           
+          template: basic_success_1
+          
+      - run: echo "Notificaciones de Slack Productivas"
+      - slack/notify:
+          event: fail
+          branch_pattern: master
+          channel: C01QKTYGUL8            
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: master
+          channel: C01QKTYGUL8 
+          template: basic_success_1
+
+      - jira/notify
+
+  success-notify-release:    
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+    
+      - run: echo "Notificaciones de No Productivas"
+      - slack/notify:
+          event: fail
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*     
+          channel: C01PQ27R3N2           
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*   
+          channel: C01PQ27R3N2           
+          template: basic_success_1
+          
+      - run: echo "Notificaciones de Slack Productivas"
+      - slack/notify:
+          event: fail
+          branch_pattern: master
+          channel: C01QKTYGUL8            
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: master
+          channel: C01QKTYGUL8 
+          template: basic_success_1
+
+      - jira/notify
+
+  success-notify-master:    
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+    
+      - run: echo "Notificaciones de No Productivas"
+      - slack/notify:
+          event: fail
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*     
+          channel: C01PQ27R3N2           
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: feature\/.*|develop|hotfix\/.*|release\/.*   
+          channel: C01PQ27R3N2           
+          template: basic_success_1
+          
+      - run: echo "Notificaciones de Slack Productivas"
+      - slack/notify:
+          event: fail
+          branch_pattern: master
+          channel: C01QKTYGUL8            
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          branch_pattern: master
+          channel: C01QKTYGUL8 
+          template: basic_success_1
+
+      - jira/notify  
+
+#####################################
+#              WORKFLOWS            #
+#####################################
 workflows:
   build_and_test:
     jobs:
-      - build2
+      ###############################################
+      #                   Base Jobs                 #
+      ###############################################
+      - build-task:
+          post-steps:
+              - jira/notify:
+                  job_type: deployment
+                  environment_type: development
 
-      - test2:
+      - test-task:
           requires:
-            - build2
+              - build-task
+          post-steps:
+              - jira/notify:
+                  job_type: deployment
+                  environment_type: testing
           
-      - sonarqube2:
+      - sonarqube-task:
           requires:
-              - test2
+              - test-task
+          post-steps:
+              - jira/notify:
+                  job_type: deployment
+                  environment_type: testing 
+      
 
-      # publish and docker image for develop branch
-      - publish-on-artifactory2-develop:
+
+      ###############################################
+      # publish and docker image for develop branch #
+      ###############################################
+      - publish-on-artifactory-develop:
           requires:
-              - sonarqube2
+              - sonarqube-task
           filters:
               branches:
                 only: /develop/
 
-      - publish-on-ecr2-develop:
+      - awsecr-develop:
           requires:
-              - sonarqube2
+            - publish-on-artifactory-develop
+          filters:
+            branches:
+              only: /develop/
+              
+      - success-notify-develop:
+          requires:
+            - awsecr-develop   
+          post-steps:
+              - jira/notify:
+                  job_type: deployment
+                  environment_type: production
           filters:
               branches:
                 only: /develop/
 
-      # publish and docker image for Release branch
-      - publish-on-artifactory2-release:
+      ###############################################
+      # publish and docker image for Release branch #
+      ###############################################
+      - publish-on-artifactory-release:
           requires:
-              - sonarqube2
+              - sonarqube-task
           filters:
               branches:
                 only: /release\/.*/
 
-      - publish-on-ecr2-release:
+      - awsecr-release:
           requires:
-              - sonarqube2
+            - publish-on-artifactory-release
           filters:
               branches:
                 only: /release\/.*/
 
-      # publish and docker image for Master branch
-      - publish-on-artifactory2-master:
+      - success-notify-release:
           requires:
-              - sonarqube2
+            - awsecr-release          
+          post-steps:
+              - jira/notify:
+                  job_type: deployment
+                  environment_type: production
           filters:
               branches:
-                only: /master\/.*/
+                only: /release\/.*/
+                
+                
 
-      - publish-on-ecr2-master:
-          requires:
-              - sonarqube2
+      ##############################################
+      # publish and docker image for Master branch #
+      ##############################################
+      - slack/on-hold:
           filters:
               branches:
-                only: /master\/.*/
+                only: /master/
+          requires:
+              - sonarqube-task
+
+      - approve-deploy:
+          type: approval
+          requires:
+              - sonarqube-task
+              - slack/on-hold
+          filters:
+              branches:
+                only: /master/
+
+      - publish-on-artifactory-master:
+          requires:
+              - approve-deploy
+          filters:
+              branches:
+                only: /master/
+
+      - awsecr-master:
+          requires:
+              - publish-on-artifactory-master
+          filters:
+              branches:
+                only: /master/
+
+      - success-notify-master:
+          requires:
+              - awsecr-master            
+          post-steps:
+              - jira/notify:
+                  job_type: deployment
+                  environment_type: production
+          filters:
+              branches:
+                only: /master/
       
