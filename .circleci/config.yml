@@ -147,6 +147,7 @@ jobs:
     docker:
       - image: 'cimg/base:stable'
     steps:
+      - checkout
       - run:
           name: "Setup environment"
           command: |
@@ -154,8 +155,6 @@ jobs:
       - run:
           name: "compile project"
           command: |
-            ls -la
-            pwd
             chmod +x gradlew
             ./gradlew test jacocoTestReport
       - run:
