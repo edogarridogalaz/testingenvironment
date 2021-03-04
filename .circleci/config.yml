@@ -150,10 +150,12 @@ jobs:
       - run:
           name: "Setup environment"
           command: |
-            sudo apt-get update && sudo apt-get install -y curl jq wget
+            sudo apt-get update && sudo apt-get install gradle
       - run:
           name: "compile project"
           command: |
+            ls -la
+            pwd
             chmod +x gradlew
             ./gradlew test jacocoTestReport
       - run:
