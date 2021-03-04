@@ -154,7 +154,8 @@ jobs:
       - run:
           name: "compile project"
           command: |
-            gradle test jacocoTestReport
+            chmod +x gradlew
+            ./gradlew test jacocoTestReport
       - run:
           name: "Install Sonarqube scanner"
           command: |
