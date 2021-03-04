@@ -176,6 +176,8 @@ jobs:
               -Dsonar.organization="edogarridogalaz" \
               -Dsonar.projectKey=${CIRCLE_PROJECT_USERNAME}_${CIRCLE_PROJECT_REPONAME} \
               -Dsonar.sources="." \
+              -Dsonar.branch.name=${CIRCLE_BRANCH} \
+              -Dsonar.branch.target=${CIRCLE_BRANCH} \
               -Dsonar.exclusions="**/*.yaml,**/*.yml"
 
       - run:
