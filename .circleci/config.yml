@@ -151,12 +151,11 @@ jobs:
       - run:
           name: "Setup environment"
           command: |
-            sudo apt-get update && sudo apt-get install gradle
+            sudo apt-get update && sudo apt-get install gradle nodejs zip openjdk-11-jdk-headless curl jq
       - run:
           name: "compile project"
           command: |
-            sudo chmod +x gradlew
-            ./gradlew clean build test jacocoTestReport
+            sudo gradle clean build test jacocoTestReport
       - run:
           name: "Install Sonarqube scanner"
           command: |
