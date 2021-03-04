@@ -173,7 +173,7 @@ jobs:
               -Dsonar.host.url="https://sonarcloud.io/" \
               -Dsonar.login=$token \
               -Dsonar.java.binaries=. \
-              -Dsonar.organization="suma" \
+              -Dsonar.organization="edogarridogalaz" \
               -Dsonar.projectKey=${CIRCLE_PROJECT_USERNAME}_${CIRCLE_PROJECT_REPONAME} \
               -Dsonar.sources="." \
               -Dsonar.exclusions="**/*.yaml,**/*.yml"
