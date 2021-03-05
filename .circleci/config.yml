@@ -176,7 +176,7 @@ jobs:
               -Dsonar.host.url="https://sonarcloud.io/" \
               -Dsonar.login=$token \
               -Dsonar.java.binaries=. \
-              -Dsonar.organization="suma" \
+              -Dsonar.organization="edogarridogalaz" \
               -Dsonar.projectKey=${CIRCLE_PROJECT_USERNAME}_${CIRCLE_PROJECT_REPONAME} \
               -Dsonar.sources="." \
               -Dsonar.test="src/test/java" \
@@ -290,7 +290,7 @@ jobs:
            gradle build
            ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive=false
            chmod +x gradlew
-           ./jfrog rt gradle-config --use-wrapper=true --repo-resolve=remote-backend-dev --server-id-resolve=Default-Server --repo-deploy=local-backend-dev --server-id-deploy=Default-Server
+           ./jfrog rt gradle-config --use-wrapper=true --repo-resolve=remote-backend-dev --server-id-resolve=Default-Server --repo-deploy=test-generic-repo --server-id-deploy=Default-Server
            ./jfrog rt gradle clean build artifactoryPublish -b build.gradle
 
       ###############################
@@ -339,7 +339,7 @@ jobs:
            gradle build
            ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive=false
            chmod +x gradlew
-           ./jfrog rt gradle-config --use-wrapper=true --repo-resolve=remote-backend-dev --server-id-resolve=Default-Server --repo-deploy=local-backend-dev --server-id-deploy=Default-Server
+           ./jfrog rt gradle-config --use-wrapper=true --repo-resolve=remote-backend-dev --server-id-resolve=Default-Server --repo-deploy=test-generic-repo --server-id-deploy=Default-Server
            ./jfrog rt gradle clean build artifactoryPublish -b build.gradle
       ###############################
       # no-productive notifications #
@@ -388,7 +388,7 @@ jobs:
            gradle build
            ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive=false
            chmod +x gradlew
-           ./jfrog rt gradle-config --use-wrapper=true --repo-resolve=remote-backend-dev --server-id-resolve=Default-Server --repo-deploy=local-backend-dev --server-id-deploy=Default-Server
+           ./jfrog rt gradle-config --use-wrapper=true --repo-resolve=remote-backend-dev --server-id-resolve=Default-Server --repo-deploy=test-generic-repo --server-id-deploy=Default-Server
            ./jfrog rt gradle clean build artifactoryPublish -b build.gradle
       ###############################
       # no-productive notifications #
@@ -627,7 +627,7 @@ workflows:
             - publish-on-artifactory-master
           filters:
             branches:
-              only: /develop/
+              only: /develop|release\/.*/
               
       - success-notify-develop:
           requires:
