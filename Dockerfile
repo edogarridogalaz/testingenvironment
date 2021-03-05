@@ -7,7 +7,6 @@ COPY build.gradle .
 RUN apt-get install bash sed
 COPY settings.gradle .
 RUN chmod +x gradlew
-RUN sed -i.bak 's/\r$//' gradlew
 RUN sh gradlew -Dgradle.user.home=/workspace/app dependencies
 COPY src src
 RUN sh gradlew -Dgradle.user.home=/workspace/app build
