@@ -621,7 +621,7 @@ workflows:
           region: AWS_DEFAULT_REGION
           repo: 'test-backend-repo'
           skip-when-tags-exist: true
-          tag: '${CIRCLE_SHA1:0:7},latest,${CIRCLE_BRANCH}'
+          tag: '${CIRCLE_SHA1:0:7},latest,${CIRCLE_BRANCH:0:7}'
           requires:
             - publish-on-artifactory-develop
             - publish-on-artifactory-release
