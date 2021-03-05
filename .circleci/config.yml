@@ -148,6 +148,10 @@ jobs:
       - image: 'cimg/base:stable'
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            - v1-dependencies-
       - run:
           name: "Setup environment"
           command: |
@@ -163,8 +167,7 @@ jobs:
           name: "Install Sonarqube scanner"
           command: |
             wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873.zip
-            unzip sonar-scanner-cli-4.2.0.1873.zip
-            
+            unzip sonar-scanner-cli-4.2.0.1873.zip 
       - run:
           name: Code analysis
           command: |
@@ -173,11 +176,13 @@ jobs:
               -Dsonar.host.url="https://sonarcloud.io/" \
               -Dsonar.login=$token \
               -Dsonar.java.binaries=. \
-              -Dsonar.organization="edogarridogalaz" \
+              -Dsonar.organization="suma" \
               -Dsonar.projectKey=${CIRCLE_PROJECT_USERNAME}_${CIRCLE_PROJECT_REPONAME} \
               -Dsonar.sources="." \
-              -Dsonar.branch.name=${CIRCLE_BRANCH} \
-              -Dsonar.exclusions="**/*.yaml,**/*.yml"
+              -Dsonar.test="src/test/java" \
+              -Dsonar.exclusions="**/*.yaml,**/*.yml,src/test/java/**,src/main/java/**/data/common/**,src/main/java/**/*Application.java" \
+              -Dsonar.coverage.jacoco.xmlReportPaths="build/reports/jacoco/test/jacocoTestReport.xml" \
+              -Dsonar.junit.reportPaths="build/test-results/test" 
 
       - run:
           name: Check quality gate
@@ -270,9 +275,24 @@ jobs:
   #
   publish-on-artifactory-develop:
     docker:
-      - image: 'cimg/base:stable'
+      - image: circleci/openjdk:11-jdk
+    working_directory: ~/repo
     steps:
-      - run: echo "Artifactory develop"
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            - v1-dependencies-
+      - run:
+          name: Install jFrog CLI
+          command: |
+           curl -fL https://getcli.jfrog.io | sh
+           gradle build
+           ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive=false
+           chmod +x gradlew
+           ./jfrog rt gradle-config --use-wrapper=true --repo-resolve=remote-backend-dev --server-id-resolve=Default-Server --repo-deploy=local-backend-dev --server-id-deploy=Default-Server
+           ./jfrog rt gradle clean build artifactoryPublish -b build.gradle
+
       ###############################
       # no-productive notifications #
       ###############################
@@ -304,9 +324,23 @@ jobs:
 
   publish-on-artifactory-release:
     docker:
-      - image: 'cimg/base:stable'
+      - image: circleci/openjdk:11-jdk
+    working_directory: ~/repo
     steps:
-      - run: echo "Artifactory release"
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            - v1-dependencies-
+      - run:
+          name: Install jFrog CLI
+          command: |
+           curl -fL https://getcli.jfrog.io | sh
+           gradle build
+           ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive=false
+           chmod +x gradlew
+           ./jfrog rt gradle-config --use-wrapper=true --repo-resolve=remote-backend-dev --server-id-resolve=Default-Server --repo-deploy=local-backend-dev --server-id-deploy=Default-Server
+           ./jfrog rt gradle clean build artifactoryPublish -b build.gradle
       ###############################
       # no-productive notifications #
       ###############################
@@ -339,10 +373,23 @@ jobs:
 
   publish-on-artifactory-master:
     docker:
-      - image: 'cimg/base:stable'
+      - image: circleci/openjdk:11-jdk
+    working_directory: ~/repo
     steps:
-      - run: echo "Artifactory master"
-
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            - v1-dependencies-
+      - run:
+          name: Install jFrog CLI
+          command: |
+           curl -fL https://getcli.jfrog.io | sh
+           gradle build
+           ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive=false
+           chmod +x gradlew
+           ./jfrog rt gradle-config --use-wrapper=true --repo-resolve=remote-backend-dev --server-id-resolve=Default-Server --repo-deploy=local-backend-dev --server-id-deploy=Default-Server
+           ./jfrog rt gradle clean build artifactoryPublish -b build.gradle
       ###############################
       # no-productive notifications #
       ###############################
@@ -518,10 +565,8 @@ workflows:
           context:
             - sonarCloud
       
-
-
       ###############################################
-      # publish and docker image for develop branch #
+      #                 DEVELOP                     #
       ###############################################
       - publish-on-artifactory-develop:
           requires:
@@ -529,27 +574,8 @@ workflows:
           filters:
               branches:
                 only: /develop/
-
-      - awsecr-develop:
-          requires:
-            - publish-on-artifactory-develop
-          filters:
-            branches:
-              only: /develop/
-              
-      - success-notify-develop:
-          requires:
-            - awsecr-develop   
-          post-steps:
-              - jira/notify:
-                  job_type: deployment
-                  environment_type: production
-          filters:
-              branches:
-                only: /develop/
-
       ###############################################
-      # publish and docker image for Release branch #
+      #                 RELEASE                     #
       ###############################################
       - publish-on-artifactory-release:
           requires:
@@ -557,30 +583,9 @@ workflows:
           filters:
               branches:
                 only: /release\/.*/
-
-      - awsecr-release:
-          requires:
-            - publish-on-artifactory-release
-          filters:
-              branches:
-                only: /release\/.*/
-
-      - success-notify-release:
-          requires:
-            - awsecr-release          
-          post-steps:
-              - jira/notify:
-                  job_type: deployment
-                  environment_type: production
-          filters:
-              branches:
-                only: /release\/.*/
-                
-                
-
-      ##############################################
-      # publish and docker image for Master branch #
-      ##############################################
+      ###############################################
+      #                 MASTER                      #
+      ###############################################
       - slack/on-hold:
           filters:
               branches:
@@ -604,16 +609,51 @@ workflows:
               branches:
                 only: /master/
 
-      - awsecr-master:
+      - aws-ecr/build-and-push-image:
+          account-url: AWS_ECR_ACCOUNT_URL
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          create-repo: false
+          checkout: true
+          no-output-timeout: 20m
+          path: .
+          region: AWS_DEFAULT_REGION
+          repo: '$CIRCLE_PROJECT_REPONAME'
+          skip-when-tags-exist: true
+          tag: '${CIRCLE_SHA1:0:7},latest,${CIRCLE_BRANCH}'
           requires:
-              - publish-on-artifactory-master
+            - publish-on-artifactory-develop
+            - publish-on-artifactory-release
+            - publish-on-artifactory-master
+          filters:
+            branches:
+              only: /develop/
+              
+      - success-notify-develop:
+          requires:
+            - aws-ecr/build-and-push-image  
+          post-steps:
+              - jira/notify:
+                  job_type: deployment
+                  environment_type: production
           filters:
               branches:
-                only: /master/
+                only: /develop/
 
+      - success-notify-release:
+          requires:
+            - aws-ecr/build-and-push-image         
+          post-steps:
+              - jira/notify:
+                  job_type: deployment
+                  environment_type: production
+          filters:
+              branches:
+                only: /release\/.*/
+                
       - success-notify-master:
           requires:
-              - awsecr-master            
+              - aws-ecr/build-and-push-image           
           post-steps:
               - jira/notify:
                   job_type: deployment

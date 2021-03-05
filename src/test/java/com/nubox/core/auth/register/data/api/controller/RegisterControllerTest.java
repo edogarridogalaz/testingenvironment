@@ -5,6 +5,7 @@ import com.nubox.core.auth.register.data.model.data.business.Register;
 import com.nubox.core.auth.register.data.model.request.UserRequest;
 import com.nubox.core.auth.register.data.model.response.RegisterResponse;
 import com.nubox.core.auth.register.data.service.RegisterService;
+import com.nubox.core.auth.register.util.Mocks;
 import com.nubox.core.auth.register.util.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,11 +50,7 @@ class RegisterControllerTest {
     void createRegister_Ok() throws Exception {
 
         //Given
-        UserRequest request = new UserRequest();
-        request.setEmail("test@nubox.com");
-        request.setFullName("name");
-        request.setPhone(null);
-        request.setPassword("******");
+        UserRequest request = Mocks.getUserRequestOk();
 
         final String USER_ID = "user-id";
         final String REGISTRATION_ID = "registration-id";
