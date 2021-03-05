@@ -3,6 +3,7 @@ FROM openjdk:11 as build
 WORKDIR /workspace/app
 COPY gradlew .
 COPY gradle gradle
+RUN ls gradle
 COPY build.gradle .
 RUN apt-get install bash sed
 COPY settings.gradle .
