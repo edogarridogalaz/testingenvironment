@@ -608,6 +608,7 @@ workflows:
           filters:
               branches:
                 only: /master/
+                
 
       - aws-ecr/build-and-push-image:
           account-url: AWS_ECR_ACCOUNT_URL
