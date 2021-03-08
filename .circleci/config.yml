@@ -292,6 +292,8 @@ jobs:
            chmod +x gradlew
            ./jfrog rt gradle-config --repo-resolve=remote-backend-dev --server-id-resolve=Default-Server --repo-deploy=test-generic-repo --server-id-deploy=Default-Server
            ./jfrog rt gradle clean build artifactoryPublish -b build.gradle
+           DEPLOYED_FILE=$(cat rt.txt | grep "**.jar$" | sed -n -e 's/^.*artifactory\///p')
+           ./jfrog rt sp $DEPLOYED_FILE "commit=${CIRCLE_SHA1:0:7};branch=${CIRCLE_BRANCH:0:3}"
 
       ###############################
       # no-productive notifications #
@@ -341,6 +343,8 @@ jobs:
            chmod +x gradlew
            ./jfrog rt gradle-config --repo-resolve=remote-backend-dev --server-id-resolve=Default-Server --repo-deploy=test-generic-repo --server-id-deploy=Default-Server
            ./jfrog rt gradle clean build artifactoryPublish -b build.gradle
+           DEPLOYED_FILE=$(cat rt.txt | grep "**.jar$" | sed -n -e 's/^.*artifactory\///p')
+           ./jfrog rt sp $DEPLOYED_FILE "commit=${CIRCLE_SHA1:0:7};branch=${CIRCLE_BRANCH:0:3}"
       ###############################
       # no-productive notifications #
       ###############################
@@ -390,6 +394,9 @@ jobs:
            chmod +x gradlew
            ./jfrog rt gradle-config --repo-resolve=remote-backend-dev --server-id-resolve=Default-Server --repo-deploy=test-generic-repo --server-id-deploy=Default-Server
            ./jfrog rt gradle clean build artifactoryPublish -b build.gradle
+           DEPLOYED_FILE=$(cat rt.txt | grep "**.jar$" | sed -n -e 's/^.*artifactory\///p')
+           ./jfrog rt sp $DEPLOYED_FILE "commit=${CIRCLE_SHA1:0:7};;branch=${CIRCLE_BRANCH:0:3}"
+
       ###############################
       # no-productive notifications #
       ###############################
@@ -621,7 +628,7 @@ workflows:
           region: AWS_DEFAULT_REGION
           repo: 'test-backend-repo'
           skip-when-tags-exist: true
-          tag: '${CIRCLE_SHA1:0:7},latest,${CIRCLE_BRANCH:0:7}'
+          tag: '${CIRCLE_SHA1:0:7},latest,${CIRCLE_BRANCH:0:3}'
           requires:
             - publish-on-artifactory-develop
             - publish-on-artifactory-release
