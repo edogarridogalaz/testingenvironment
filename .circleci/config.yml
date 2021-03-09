@@ -142,6 +142,15 @@ jobs:
           channel: C01QKTYGUL8
           template: basic_success_1
       - jira/notify
+      
+  testing-build:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - checkout
+      - run: sudo apt-get install curl jq grep sed
+      - run: git show-branch | grep '*' | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'
+
 
   sonarqube-task:
     docker:
@@ -159,8 +168,7 @@ jobs:
             sudo add-apt-repository ppa:cwchien/gradle -y
             sudo apt-get update
             sudo apt upgrade gradle
-      - run: git show-branch | grep '*' | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'
-
+      
       - run:
           name: "compile project"
           command: |
@@ -552,6 +560,7 @@ workflows:
       ###############################################
       #                   Base Jobs                 #
       ###############################################
+      - testing-build
       - build-task:
           post-steps:
               - jira/notify:
