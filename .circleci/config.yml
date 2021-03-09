@@ -158,7 +158,7 @@ jobs:
             sudo apt-get update && sudo apt-get install nodejs zip openjdk-11-jdk-headless curl jq git grep sed
             sudo add-apt-repository ppa:cwchien/gradle -y
             sudo apt-get update
-            sudo apt upgrade gradlew
+            sudo apt upgrade gradle
       - run: PARENT_BRANCH=$(git show-branch | grep '*' | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//')
       - run: echo $PARENT_BRANCH
       - run:
