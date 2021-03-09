@@ -143,6 +143,18 @@ jobs:
           template: basic_success_1
       - jira/notify
 
+  testing-build:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - checkout
+      - run: sudo apt-get install git curl jq grep sed bash
+      - run: git fetch
+      - run: 
+          name: get parent branch
+          command: |
+              export PARENT_BRANCH=$(git show-branch -a | grep '\*' \ | grep -v `git rev-parse --abbrev-ref HEAD` | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' \ | sed 's/[\^~].*//'
+              echo $PARENT_BRANCH
   sonarqube-task:
     docker:
       - image: 'cimg/base:stable'
@@ -155,10 +167,7 @@ jobs:
       - run:
           name: "Setup environment"
           command: |
-            sudo apt-get update && sudo apt-get install nodejs zip openjdk-11-jdk-headless git curl jq grep sed bash
-            git fetch
-            PARENT_BRANCH=$(git show-branch | grep '*' | grep -v 'git rev-parse --abbrev-ref HEAD' | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//')
-
+            sudo apt-get update && sudo apt-get install nodejs zip openjdk-11-jdk-headless curl jq git grep sed
             sudo add-apt-repository ppa:cwchien/gradle -y
             sudo apt-get update
             sudo apt upgrade gradle
@@ -554,11 +563,14 @@ workflows:
       ###############################################
       #                   Base Jobs                 #
       ###############################################
+      - testing-build
       - build-task:
           post-steps:
               - jira/notify:
                   job_type: deployment
                   environment_type: development
+          requires:
+              - testing-build
 
       - test-task:
           requires:
