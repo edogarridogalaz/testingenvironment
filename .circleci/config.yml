@@ -149,8 +149,7 @@ jobs:
     steps:
       - checkout
       - run: sudo apt-get install git curl jq grep sed bash
-      - run: AUX_REV_PARSE=$(git rev-parse --abbrev-ref HEAD)
-      - run: echo $AUX_REV_PARSE
+      - run: git fetch
       - run: git show-branch | grep '*' | grep -v 'git rev-parse --abbrev-ref HEAD' | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'
 
 
