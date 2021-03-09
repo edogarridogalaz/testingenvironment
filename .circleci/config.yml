@@ -183,7 +183,7 @@ jobs:
               -Dsonar.sources="." \
               -Dsonar.test="src/test/java" \
               -Dsonar.branch.name=${CIRCLE_BRANCH} \
-              -Dsonar.branch.target=$PARENT_BRANCH \
+              -Dsonar.branch.target=$(git show-branch -a | grep '\*' | grep -v `git rev-parse --abbrev-ref HEAD` | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//' | sed -e 's#.*\/\(\)#\1#') \
               -Dsonar.exclusions="**/*.yaml,**/*.yml,src/test/java/**,src/main/java/**/data/common/**,src/main/java/**/*Application.java" \
               -Dsonar.coverage.jacoco.xmlReportPaths="build/reports/jacoco/test/jacocoTestReport.xml" \
               -Dsonar.junit.reportPaths="build/test-results/test" 
