@@ -142,13 +142,13 @@ jobs:
           channel: C01QKTYGUL8
           template: basic_success_1
       - jira/notify
-      
+
   testing-build:
     docker:
       - image: 'cimg/base:stable'
     steps:
       - checkout
-      - run: sudo apt-get install curl jq grep sed
+      - run: sudo apt-get install curl jq grep sed sh
       - run: git show-branch | grep '*' | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'
 
 
@@ -566,6 +566,8 @@ workflows:
               - jira/notify:
                   job_type: deployment
                   environment_type: development
+          requires:
+              - testing-build
 
       - test-task:
           requires:
