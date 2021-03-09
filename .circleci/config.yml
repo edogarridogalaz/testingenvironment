@@ -153,7 +153,7 @@ jobs:
       - run: 
           name: get parent branch
           command: |
-              export PARENT_BRANCH=$(git show-branch -a | grep '\*' \ | grep -v `git rev-parse --abbrev-ref HEAD` | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' \ | sed 's/[\^~].*//')
+              export PARENT_BRANCH=$(git show-branch -a | grep '\*' | grep -v `git rev-parse --abbrev-ref HEAD` | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' \ | sed 's/[\^~].*//')
               echo $PARENT_BRANCH
   sonarqube-task:
     docker:
