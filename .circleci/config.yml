@@ -153,10 +153,7 @@ jobs:
       - run: echo $AUX_REV_PARSE
       - run: git show-branch 
       - run: git show-branch | grep '*' 
-      - run: git show-branch | grep '*' | grep -v '$AUX_REV_PARSE'
-      - run: git show-branch | grep '*' | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -n1 
-      - run: git show-branch | grep '*' | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' 
-      - run: git show-branch | grep '*' | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'
+      - run: git show-branch | grep '*' | grep -v '$AUX_REV_PARSE' | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'
 
 
   sonarqube-task:
