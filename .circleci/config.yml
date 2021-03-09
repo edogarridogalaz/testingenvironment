@@ -155,7 +155,7 @@ jobs:
       - run:
           name: "Setup environment"
           command: |
-            sudo apt-get update && sudo apt-get install nodejs zip openjdk-11-jdk-headless curl jq git
+            sudo apt-get update && sudo apt-get install nodejs zip openjdk-11-jdk-headless curl jq git grep sed head
             sudo add-apt-repository ppa:cwchien/gradle -y
             sudo apt-get update
             sudo apt upgrade gradle
