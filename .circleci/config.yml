@@ -159,8 +159,8 @@ jobs:
             sudo add-apt-repository ppa:cwchien/gradle -y
             sudo apt-get update
             sudo apt upgrade gradle
-      - run: PARENT_BRANCH=$(git show-branch | grep '*' | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//')
-      - run: echo $PARENT_BRANCH
+      - run: git show-branch | grep '*' | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'
+
       - run:
           name: "compile project"
           command: |
