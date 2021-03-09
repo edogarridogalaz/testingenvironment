@@ -554,14 +554,11 @@ workflows:
       ###############################################
       #                   Base Jobs                 #
       ###############################################
-      - testing-build
       - build-task:
           post-steps:
               - jira/notify:
                   job_type: deployment
                   environment_type: development
-          requires:
-              - testing-build
 
       - test-task:
           requires:
