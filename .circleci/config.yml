@@ -171,6 +171,7 @@ jobs:
       - run:
           name: Code analysis
           command: |
+            PARENT_BRANCH=$(git show-branch | grep '*' | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//')
             export SONAR_RUNNER_OPTS="-Xms1024m -Xmx4096m"
             eval ./sonar-scanner-4.2.0.1873/bin/sonar-scanner \
               -Dsonar.host.url="https://sonarcloud.io/" \
@@ -180,6 +181,8 @@ jobs:
               -Dsonar.projectKey=${CIRCLE_PROJECT_USERNAME}_${CIRCLE_PROJECT_REPONAME} \
               -Dsonar.sources="." \
               -Dsonar.test="src/test/java" \
+              -Dsonar.branch.name=${CIRCLE_BRANCH} \
+              -Dsonar.branch.target="$PARENT_BRANCH" \
               -Dsonar.exclusions="**/*.yaml,**/*.yml,src/test/java/**,src/main/java/**/data/common/**,src/main/java/**/*Application.java" \
               -Dsonar.coverage.jacoco.xmlReportPaths="build/reports/jacoco/test/jacocoTestReport.xml" \
               -Dsonar.junit.reportPaths="build/test-results/test" 
