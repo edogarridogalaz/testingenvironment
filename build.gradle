@@ -16,6 +16,10 @@ configurations {
     }
 }
 
+task[ 
+    
+]
+
 repositories {
     maven {
         url = 'https://sumasaas.jfrog.io/artifactory/virtual-backend-dev/'
